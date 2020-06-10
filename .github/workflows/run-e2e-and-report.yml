@@ -3,8 +3,9 @@ on:
   push:
     branches: [ master ]
 jobs:
-  build:
+  run-e2e:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
     - uses: actions/checkout@v2
 
@@ -53,11 +54,24 @@ jobs:
         kubectl delete -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-deploy.yaml
         kubectl delete -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-service.yaml
 
-  report:  
+  report-to-baseline:  
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    needs: run-e2e
     steps: 
 
     - name: "[Report]: Update baseline YAML with tested images"
       run: |
         # TEMP
-        kubectl apply -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-deploy.yaml --dry-run -o jsonpath='{.spec.template.spec.containers[?(@.name=="test-app")].image}' | cut -d "/" -f 2
+        kubectl apply -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-deploy.yaml --dry-run -o jsonpath='{.spec.template.spec.containers[?(@.name=="test-app")].image}' | cut -d "/" -f 2 > baseline.yaml
+
+    - name: "Commit baseline manifest to repo"
+      runs: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -s -m "[skip ci] Update baseline manifests"
+
+    - name: Push baseline manifests to local repo
+      uses: ad-m/github-push-action@master
+        github_token: ${{ secrets.AUTO_COMMIT_TOKEN }}
