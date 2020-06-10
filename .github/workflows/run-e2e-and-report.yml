@@ -52,3 +52,12 @@ jobs:
       run: |
         kubectl delete -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-deploy.yaml
         kubectl delete -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-service.yaml
+
+  report:  
+    runs-on: ubuntu-latest
+    steps: 
+
+    - name: "[Report]: Update baseline YAML with tested images"
+      run: |
+        # TEMP
+        kubectl apply -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-deploy.yaml --dry-run -o jsonpath='{.spec.template.spec.containers[?(@.name=="test-app")].image}' | cut -d "/" -f 2
