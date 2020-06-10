@@ -3,7 +3,7 @@ on:
   push:
     branches: [ master ]
 jobs:
-  run-e2e:
+  run-e2e-and-report-baseline:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
@@ -53,12 +53,6 @@ jobs:
       run: |
         kubectl delete -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-deploy.yaml
         kubectl delete -f https://raw.githubusercontent.com/ksatchit/test-k8s-deploy/master/test-k8s-app/hello-service.yaml
-
-  report-to-baseline:  
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    needs: run-e2e
-    steps: 
 
     - name: "[Report]: Update baseline YAML with tested images"
       run: |
