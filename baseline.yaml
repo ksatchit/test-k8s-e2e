@@ -1,2 +1,2 @@
 ---
-test-k8s-app: sha-c6e3617 
+test_k8s_app_image: sha-c6e3617 
